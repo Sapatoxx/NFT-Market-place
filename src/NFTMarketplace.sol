@@ -203,7 +203,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
         // Interactions: Transferir el NFT primero
         nftContract.safeTransferFrom(listing_.seller, msg.sender, listing_.tokenId);
 
-        // Transferir tokens del comprador al vendedor (usando SafeERC20)
+        // Transferir tokens del comprador al vendedor (usando SafeERC20 de openzeppelin)
         IERC20(paymentToken).safeTransferFrom(msg.sender, listing_.seller, sellerAmount);
 
         // Transferir fee al contrato
