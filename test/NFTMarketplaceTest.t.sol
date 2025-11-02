@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import "forge-std/Test.sol";
-import "../lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import "../src/NFTMarketplace.sol";
+import {Test} from "forge-std/Test.sol";
+import {ERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {NFTMarketplace} from "../src/NFTMarketplace.sol";
 
 contract MockNFT is ERC721 {
     constructor() ERC721("MockNFT", "MNFT") {} //Lo que hacemos con un Mock NFT es simular un NFT con todas sus características solo para testear
@@ -56,7 +56,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
 
         vm.expectRevert("Price can not be 0");
-        marketplace.listNFT(address(nft), tokenId, 0, address(0));
+    marketplace.listNft(address(nft), tokenId, 0, address(0));
 
         vm.stopPrank();
     }
@@ -68,7 +68,7 @@ contract NFTMarketPlaceTest is Test {
         uint256 tokenId1 = 1;
         nft.mint(user2, tokenId1);
         vm.expectRevert("You are not the owner");
-        marketplace.listNFT(address(nft), 1, 1, address(0));
+    marketplace.listNft(address(nft), 1, 1, address(0));
 
         vm.stopPrank();
     }
@@ -77,7 +77,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
 
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, 1e18, address(0));
+    marketplace.listNft(address(nft), tokenId, 1e18, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         assert(sellerBefore == address(0) && sellerAfter == user);
@@ -89,7 +89,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
 
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, 1e18, address(0));
+    marketplace.listNft(address(nft), tokenId, 1e18, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         vm.stopPrank();
@@ -106,7 +106,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
 
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, 1e18, address(0));
+    marketplace.listNft(address(nft), tokenId, 1e18, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         assert(sellerBefore == address(0) && sellerAfter == user);
@@ -123,7 +123,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user2);
 
         vm.expectRevert("Listing not exists");
-        marketplace.buyNFTWithETH(address(nft), tokenId);
+    marketplace.buyNftWithEth(address(nft), tokenId);
 
         vm.stopPrank();
     }
@@ -134,7 +134,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
         // listing con token no permitido debe revertir
         vm.expectRevert("Payment token not allowed");
-        marketplace.listNFT(address(nft), tokenId, 1e18, address(token2));
+    marketplace.listNft(address(nft), tokenId, 1e18, address(token2));
         vm.stopPrank();
     }
 
@@ -142,7 +142,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user);
 
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, 1e18, address(token));
+    marketplace.listNft(address(nft), tokenId, 1e18, address(token));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         assert(sellerBefore == address(0) && sellerAfter == user);
@@ -155,7 +155,7 @@ contract NFTMarketPlaceTest is Test {
 
         uint256 price = 1e18;
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, price, address(0));
+    marketplace.listNft(address(nft), tokenId, price, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         assert(sellerBefore == address(0) && sellerAfter == user);
@@ -166,7 +166,7 @@ contract NFTMarketPlaceTest is Test {
         vm.startPrank(user2);
         vm.deal(user2, price);
         vm.expectRevert("Incorrect price");
-        marketplace.buyNFTWithETH{value: price - 1}(address(nft), tokenId);
+    marketplace.buyNftWithEth{value: price - 1}(address(nft), tokenId);
 
         vm.stopPrank();
     }
@@ -175,14 +175,14 @@ contract NFTMarketPlaceTest is Test {
         address user2 = vm.addr(3);
         vm.startPrank(user2);
         vm.expectRevert("Listing not exists");
-        marketplace.buyNFTWithERC20(address(nft), tokenId);
+    marketplace.buyNftWithErc20(address(nft), tokenId);
         vm.stopPrank();
     }
 
     function testERC20CanNotBuyWithInsufficientAllowance() public {
         vm.startPrank(user);
         uint256 price = 1e18;
-        marketplace.listNFT(address(nft), tokenId, price, address(token));
+    marketplace.listNft(address(nft), tokenId, price, address(token));
         vm.stopPrank();
 
         address user2 = vm.addr(3);
@@ -191,14 +191,14 @@ contract NFTMarketPlaceTest is Test {
         // No aprobamos suficiente allowance
         token.approve(address(marketplace), price - 1);
         vm.expectRevert();
-        marketplace.buyNFTWithERC20(address(nft), tokenId);
+    marketplace.buyNftWithErc20(address(nft), tokenId);
         vm.stopPrank();
     }
 
     function testERC20CanNotBuyWithInsufficientBalance() public {
         vm.startPrank(user);
         uint256 price = 1e18;
-        marketplace.listNFT(address(nft), tokenId, price, address(token));
+    marketplace.listNft(address(nft), tokenId, price, address(token));
         vm.stopPrank();
 
         address user2 = vm.addr(3);
@@ -206,14 +206,14 @@ contract NFTMarketPlaceTest is Test {
         // Aprobamos allowance completa pero sin balance suficiente
         token.approve(address(marketplace), price);
         vm.expectRevert();
-        marketplace.buyNFTWithERC20(address(nft), tokenId);
+    marketplace.buyNftWithErc20(address(nft), tokenId);
         vm.stopPrank();
     }
 
     function testERC20ShouldBuyCorrectly() public {
         vm.startPrank(user);
         uint256 price = 1e18;
-        marketplace.listNFT(address(nft), tokenId, price, address(token));
+    marketplace.listNft(address(nft), tokenId, price, address(token));
         vm.stopPrank();
 
         address buyer = vm.addr(3);
@@ -227,7 +227,7 @@ contract NFTMarketPlaceTest is Test {
 
         (uint256 feeAmount, uint256 sellerAmount) = marketplace.calculateFee(price);
 
-        marketplace.buyNFTWithERC20(address(nft), tokenId);
+    marketplace.buyNftWithErc20(address(nft), tokenId);
 
         uint256 sellerBalanceAfter = token.balanceOf(user);
         uint256 buyerBalanceAfter = token.balanceOf(buyer);
@@ -244,7 +244,7 @@ contract NFTMarketPlaceTest is Test {
         assert(contractBalanceAfter == contractBalanceBefore + feeAmount);
 
         // fees acumulados en el marketplace
-        assert(marketplace.accumulatedFeesERC20(address(token)) == feeAmount);
+    assert(marketplace.accumulatedFeesErc20(address(token)) == feeAmount);
 
         vm.stopPrank();
     }
@@ -253,7 +253,7 @@ contract NFTMarketPlaceTest is Test {
         // Preparar venta para generar fees
         vm.startPrank(user);
         uint256 price = 1e18;
-        marketplace.listNFT(address(nft), tokenId, price, address(token));
+    marketplace.listNft(address(nft), tokenId, price, address(token));
         vm.stopPrank();
 
         address buyer = vm.addr(3);
@@ -261,19 +261,19 @@ contract NFTMarketPlaceTest is Test {
         token.mint(buyer, price);
         token.approve(address(marketplace), price);
         (uint256 feeAmount,) = marketplace.calculateFee(price);
-        marketplace.buyNFTWithERC20(address(nft), tokenId);
+    marketplace.buyNftWithErc20(address(nft), tokenId);
         vm.stopPrank();
 
         // Retirar fees como owner (deployer)
         vm.startPrank(deployer);
         uint256 ownerBalBefore = token.balanceOf(deployer);
         uint256 contractBalBefore = token.balanceOf(address(marketplace));
-        marketplace.withdrawFeesERC20(address(token));
+    marketplace.withdrawFeesErc20(address(token));
         uint256 ownerBalAfter = token.balanceOf(deployer);
         uint256 contractBalAfter = token.balanceOf(address(marketplace));
         assert(ownerBalAfter == ownerBalBefore + feeAmount);
         assert(contractBalAfter == contractBalBefore - feeAmount);
-        assert(marketplace.accumulatedFeesERC20(address(token)) == 0);
+    assert(marketplace.accumulatedFeesErc20(address(token)) == 0);
         vm.stopPrank();
     }
 
@@ -282,7 +282,7 @@ contract NFTMarketPlaceTest is Test {
 
         uint256 price = 1e18;
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.listNFT(address(nft), tokenId, price, address(0));
+    marketplace.listNft(address(nft), tokenId, price, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
 
         assert(sellerBefore == address(0) && sellerAfter == user);
@@ -296,7 +296,7 @@ contract NFTMarketPlaceTest is Test {
         uint256 balanceBefore = address(user).balance;
         address ownerBefore = nft.ownerOf(tokenId);
         (address sellerBefore2,,,,) = marketplace.listing(address(nft), tokenId);
-        marketplace.buyNFTWithETH{value: price}(address(nft), tokenId);
+    marketplace.buyNftWithEth{value: price}(address(nft), tokenId);
         (address sellerAfter2,,,,) = marketplace.listing(address(nft), tokenId);
         address ownerAfter = nft.ownerOf(tokenId);
         uint256 balanceAfter = address(user).balance;
