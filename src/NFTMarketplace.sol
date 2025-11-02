@@ -19,7 +19,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Donde guardaremos los listados
-    mapping(address => mapping(uint256 => Listing)) listing;
+    mapping(address => mapping(uint256 => Listing)) public listing;
 
     // Tokens ERC-20 permitidos para pagos
     mapping(address => bool) public allowedTokens;
@@ -174,7 +174,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Buy NFTs con tokens ERC-20
-    function buyNFTWithERC20(address nftAddress_, uint256 tokenId_) external nonReentrant {
+    function buyNFTWithERC20(address nftAddress_, uint256 tokenId_) external payable nonReentrant {
         Listing memory listing_ = listing[nftAddress_][tokenId_];
         require(listing_.price > 0, "Listing not exists");
         require(listing_.paymentToken != address(0), "This NFT requires ETH payment");
