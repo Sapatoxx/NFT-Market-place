@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
-import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
-import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 
 contract NFTMarketplace is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -28,10 +28,10 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     uint256 public marketplaceFee = 250; // 2.5% por defecto
 
     // Acumulado de fees del owner en ETH
-    uint256 public accumulatedFeesEth;
+    uint256 public accumulatedFeesETH;
 
     // Acumulado de fees del owner en tokens ERC-20
-    mapping(address => uint256) public accumulatedFeesErc20;
+    mapping(address => uint256) public accumulatedFeesERC20;
 
     // Events
     event NFTListed(
@@ -70,10 +70,10 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Función para que el owner retire sus fees acumulados en ETH
-    function withdrawFeesEth() external onlyOwner nonReentrant {
-        require(accumulatedFeesEth > 0, "No ETH fees to withdraw");
-        uint256 amount = accumulatedFeesEth;
-        accumulatedFeesEth = 0;
+    function withdrawFeesETH() external onlyOwner nonReentrant {
+        require(accumulatedFeesETH > 0, "No ETH fees to withdraw");
+        uint256 amount = accumulatedFeesETH;
+        accumulatedFeesETH = 0;
 
         (bool success,) = owner().call{value: amount}("");
         require(success, "Withdrawal failed");
@@ -82,10 +82,10 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Función para que el owner retire sus fees acumulados en tokens ERC-20
-    function withdrawFeesErc20(address token_) external onlyOwner nonReentrant {
-        require(accumulatedFeesErc20[token_] > 0, "No token fees to withdraw");
-        uint256 amount = accumulatedFeesErc20[token_];
-        accumulatedFeesErc20[token_] = 0;
+    function withdrawFeesERC20(address token_) external onlyOwner nonReentrant {
+        require(accumulatedFeesERC20[token_] > 0, "No token fees to withdraw");
+        uint256 amount = accumulatedFeesERC20[token_];
+        accumulatedFeesERC20[token_] = 0;
 
         IERC20(token_).safeTransfer(owner(), amount);
 
@@ -93,7 +93,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // List NFTS function - ahora con opción de especificar token de pago
-    function listNft(
+    function listNFT(
         address nftAddress_,
         uint256 tokenId_,
         uint256 price_,
@@ -134,7 +134,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Buy NFTs con ETH
-    function buyNftWithEth(address nftAddress_, uint256 tokenId_) external payable nonReentrant {
+    function buyNFTWithETH(address nftAddress_, uint256 tokenId_) external payable nonReentrant {
         Listing memory listing_ = listing[nftAddress_][tokenId_];
         require(listing_.price > 0, "Listing not exists");
         require(listing_.paymentToken == address(0), "This NFT requires ERC-20 payment");
@@ -159,7 +159,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
         uint256 sellerAmount = msg.value - feeAmount;
 
         // Acumular fees del owner
-    accumulatedFeesEth += feeAmount;
+        accumulatedFeesETH += feeAmount;
 
         // Interactions: Transferir el NFT primero (previene reentrancia del seller)
         nftContract.safeTransferFrom(listing_.seller, msg.sender, listing_.tokenId);
@@ -174,7 +174,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
     }
 
     // Buy NFTs con tokens ERC-20
-    function buyNftWithErc20(address nftAddress_, uint256 tokenId_) external payable nonReentrant {
+    function buyNFTWithERC20(address nftAddress_, uint256 tokenId_) external payable nonReentrant {
         Listing memory listing_ = listing[nftAddress_][tokenId_];
         require(listing_.price > 0, "Listing not exists");
         require(listing_.paymentToken != address(0), "This NFT requires ETH payment");
@@ -210,7 +210,7 @@ contract NFTMarketplace is Ownable, ReentrancyGuard {
         IERC20(paymentToken).safeTransferFrom(msg.sender, address(this), feeAmount);
 
         // Acumular fees del owner
-    accumulatedFeesErc20[paymentToken] += feeAmount;
+        accumulatedFeesERC20[paymentToken] += feeAmount;
 
         emit NFTSold(
             msg.sender, listing_.seller, listing_.nftAddress, listing_.tokenId, listing_.price, feeAmount, paymentToken
