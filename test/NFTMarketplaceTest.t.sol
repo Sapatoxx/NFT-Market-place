@@ -105,7 +105,6 @@ contract NFTMarketPlaceTest is Test {
     function testCancelListSuccessfully() public {
         vm.startPrank(user);
 
-
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
         marketplace.listNFT(address(nft), tokenId, 1e18, address(0));
         (address sellerAfter,,,,) = marketplace.listing(address(nft), tokenId);
@@ -279,7 +278,7 @@ contract NFTMarketPlaceTest is Test {
     }
 
     function testShouldBuyNFTCorrectly() public {
-      vm.startPrank(user);
+        vm.startPrank(user);
 
         uint256 price = 1e18;
         (address sellerBefore,,,,) = marketplace.listing(address(nft), tokenId);
